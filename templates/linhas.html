@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Linhas - Sistema de Passageiros</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header class="topbar">
+        <h1>Linhas Rodoviárias</h1>
+
+        <div class="topbar-actions">
+            <a href="{{ url_for('dashboard') }}">Voltar</a>
+            <a href="{{ url_for('logout') }}" class="btn-sair">Sair</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <h2 class="page-title">Linhas cadastradas</h2>
+
+        <table class="tabela">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Origem</th>
+                    <th>Destino</th>
+                    <th>Via</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for linha in linhas %}
+                <tr>
+                    <td>{{ linha.codigo }}</td>
+                    <td>{{ linha.origem }}</td>
+                    <td>{{ linha.destino }}</td>
+                    <td>
+                        {% if linha.via %}
+                            {{ linha.via }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status">Ativa</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+
+</body>
+</html>

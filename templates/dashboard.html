@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Sistema de Passageiros</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header class="topbar">
+        <h1>Gestão de Transporte de Passageiros</h1>
+        <a href="{{ url_for('logout') }}">Sair</a>
+    </header>
+
+    <main class="container">
+
+        <section class="resumo-grid">
+            <div class="resumo-card">
+                <span>Linhas</span>
+                <strong>{{ total_linhas }}</strong>
+            </div>
+
+            <div class="resumo-card">
+                <span>Viagens manuais</span>
+                <strong>{{ total_viagens }}</strong>
+            </div>
+
+            <div class="resumo-card">
+                <span>Passageiros</span>
+                <strong>{{ total_passageiros }}</strong>
+            </div>
+
+            <div class="resumo-card">
+                <span>Receita manual</span>
+                <strong>R$ {{ "%.2f"|format(total_receita) }}</strong>
+            </div>
+
+            <div class="resumo-card">
+                <span>BP-es importados</span>
+                <strong>{{ total_bpes }}</strong>
+            </div>
+
+            <div class="resumo-card">
+                <span>Receita BP-e</span>
+                <strong>R$ {{ "%.2f"|format(total_receita_bpe) }}</strong>
+            </div>
+        </section>
+
+        <section class="cards">
+
+            <a href="{{ url_for('linhas') }}" class="card-link">
+                <div class="card">
+                    <h3>Linhas</h3>
+                    <p>Cadastro e controle de linhas rodoviárias.</p>
+                </div>
+            </a>
+
+            <a href="{{ url_for('viagens') }}" class="card-link">
+                <div class="card">
+                    <h3>Viagens</h3>
+                    <p>Registro manual de viagens realizadas.</p>
+                </div>
+            </a>
+
+            <div class="card">
+                <h3>Passageiros</h3>
+                <p>Controle e análise de passageiros transportados.</p>
+            </div>
+
+            <a href="{{ url_for('importar_bpe') }}" class="card-link">
+                <div class="card">
+                    <h3>Importar BP-e</h3>
+                    <p>Importação de XML das vendas diárias.</p>
+                </div>
+            </a>
+
+        </section>
+    </main>
+
+</body>
+</html>

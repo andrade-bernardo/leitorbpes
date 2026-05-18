@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Viagens - Sistema de Passageiros</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header class="topbar">
+        <h1>Registro de Viagens</h1>
+
+        <div class="topbar-actions">
+            <a href="{{ url_for('dashboard') }}">Voltar</a>
+            <a href="{{ url_for('logout') }}" class="btn-sair">Sair</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <h2 class="page-title">Nova viagem</h2>
+
+        <form class="form-card" method="POST">
+            <div class="form-grid">
+
+                <div>
+                    <label>Data da viagem</label>
+                    <input type="date" name="data" required>
+                </div>
+
+                <div>
+                    <label>Linha</label>
+                    <select name="linha" required>
+                        <option value="">Selecione uma linha</option>
+                        {% for linha in linhas %}
+                            <option value="{{ linha.codigo }}">
+                                {{ linha.codigo }} - {{ linha.origem }} x {{ linha.destino }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label>Horário de saída</label>
+                    <input type="time" name="saida">
+                </div>
+
+                <div>
+                    <label>Horário de chegada</label>
+                    <input type="time" name="chegada">
+                </div>
+
+                <div>
+                    <label>Veículo</label>
+                    <input type="text" name="veiculo" placeholder="Ex: 3021">
+                </div>
+
+                <div>
+                    <label>Motorista</label>
+                    <input type="text" name="motorista" placeholder="Nome do motorista">
+                </div>
+
+                <div>
+                    <label>Passageiros transportados</label>
+                    <input type="number" name="passageiros" placeholder="Ex: 38">
+                </div>
+
+                <div>
+                    <label>Receita total</label>
+                    <input type="number" step="0.01" name="receita" placeholder="Ex: 2470.00">
+                </div>
+
+            </div>
+
+            <div class="form-full">
+                <label>Observações</label>
+                <textarea name="observacoes" placeholder="Digite alguma observação da viagem"></textarea>
+            </div>
+
+            <button type="submit" class="btn-principal">Salvar viagem</button>
+        </form>
+
+        <h2 class="page-title espaco-topo">Viagens cadastradas</h2>
+
+        <table class="tabela">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Linha</th>
+                    <th>Saída</th>
+                    <th>Chegada</th>
+                    <th>Veículo</th>
+                    <th>Motorista</th>
+                    <th>Passageiros</th>
+                    <th>Receita</th>
+                    <th>Observações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% if viagens %}
+                    {% for viagem in viagens %}
+                    <tr>
+                        <td>{{ viagem.data }}</td>
+                        <td>{{ viagem.linha_nome }}</td>
+                        <td>{{ viagem.horario_saida }}</td>
+                        <td>{{ viagem.horario_chegada }}</td>
+                        <td>{{ viagem.veiculo }}</td>
+                        <td>{{ viagem.motorista }}</td>
+                        <td>{{ viagem.passageiros }}</td>
+                        <td>R$ {{ "%.2f"|format(viagem.receita) }}</td>
+                        <td>{{ viagem.observacoes }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9">Nenhuma viagem cadastrada ainda.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </main>
+
+</body>
+</html>

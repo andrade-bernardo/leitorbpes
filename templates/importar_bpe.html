@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Importar BP-e - Sistema de Passageiros</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header class="topbar">
+        <h1>Importar BP-e / Vendas Diárias</h1>
+
+        <div class="topbar-actions">
+            <a href="{{ url_for('dashboard') }}">Voltar</a>
+            <a href="{{ url_for('logout') }}" class="btn-sair">Sair</a>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <section class="resumo-grid">
+            <div class="resumo-card">
+                <span>BP-es importados</span>
+                <strong>{{ total_vendas }}</strong>
+            </div>
+
+            <div class="resumo-card">
+                <span>Receita importada</span>
+                <strong>R$ {{ "%.2f"|format(total_receita) }}</strong>
+            </div>
+        </section>
+
+        <h2 class="page-title">Importar XMLs de BP-e</h2>
+
+        {% if mensagem %}
+            <p class="mensagem-sucesso">{{ mensagem }}</p>
+        {% endif %}
+
+        {% if erro %}
+            <p class="mensagem-erro">{{ erro }}</p>
+        {% endif %}
+
+        <form class="form-card" method="POST" enctype="multipart/form-data">
+            <div>
+                <label>Arquivos XML do BP-e</label>
+                <input type="file" name="arquivos_xml" accept=".xml" multiple required>
+                <small class="texto-ajuda">
+                    Você pode selecionar vários arquivos ao mesmo tempo usando Ctrl ou Shift.
+                </small>
+            </div>
+
+            <button type="submit" class="btn-principal">Importar XMLs</button>
+        </form>
+
+        <h2 class="page-title espaco-topo">Vendas importadas</h2>
+
+        <table class="tabela">
+            <thead>
+                <tr>
+                    <th>BP-e</th>
+                    <th>Emissão</th>
+                    <th>Viagem</th>
+                    <th>Origem</th>
+                    <th>Destino</th>
+                    <th>Percurso</th>
+                    <th>Prefixo</th>
+                    <th>Poltrona</th>
+                    <th>Valor</th>
+                    <th>Pagamento</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% if vendas %}
+                    {% for venda in vendas %}
+                    <tr>
+                        <td>{{ venda.numero_bpe }}</td>
+                        <td>{{ venda.data_emissao }}</td>
+                        <td>{{ venda.data_viagem }}</td>
+                        <td>{{ venda.origem }}</td>
+                        <td>{{ venda.destino }}</td>
+                        <td>{{ venda.percurso }}</td>
+                        <td>{{ venda.prefixo }}</td>
+                        <td>{{ venda.poltrona }}</td>
+                        <td>R$ {{ "%.2f"|format(venda.valor_pago) }}</td>
+                        <td>{{ venda.forma_pagamento }}</td>
+                        <td>{{ venda.status }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="11">Nenhum BP-e importado ainda.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+    </main>
+
+</body>
+</html>
