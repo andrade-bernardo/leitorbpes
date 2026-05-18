@@ -20,12 +20,12 @@
 
         <section class="resumo-grid">
             <div class="resumo-card">
-                <span>BP-es importados</span>
+                <span>BP-es encontrados</span>
                 <strong>{{ total_vendas }}</strong>
             </div>
 
             <div class="resumo-card">
-                <span>Receita importada</span>
+                <span>Receita filtrada</span>
                 <strong>R$ {{ "%.2f"|format(total_receita) }}</strong>
             </div>
         </section>
@@ -45,11 +45,59 @@
                 <label>Arquivos XML do BP-e</label>
                 <input type="file" name="arquivos_xml" accept=".xml" multiple required>
                 <small class="texto-ajuda">
-                    Você pode selecionar vários arquivos ao mesmo tempo usando Ctrl ou Shift.
+                    Você pode selecionar vários arquivos ao mesmo tempo usando Ctrl, Shift ou Ctrl + A.
                 </small>
             </div>
 
             <button type="submit" class="btn-principal">Importar XMLs</button>
+        </form>
+
+        <h2 class="page-title espaco-topo">Filtros</h2>
+
+        <form class="form-card" method="GET">
+            <div class="form-grid">
+
+                <div>
+                    <label>Data inicial da viagem</label>
+                    <input type="date" name="data_inicio" value="{{ filtros.data_inicio }}">
+                </div>
+
+                <div>
+                    <label>Data final da viagem</label>
+                    <input type="date" name="data_fim" value="{{ filtros.data_fim }}">
+                </div>
+
+                <div>
+                    <label>Origem</label>
+                    <input type="text" name="origem" placeholder="Ex: Bagé" value="{{ filtros.origem }}">
+                </div>
+
+                <div>
+                    <label>Destino</label>
+                    <input type="text" name="destino" placeholder="Ex: Dom Pedrito" value="{{ filtros.destino }}">
+                </div>
+
+                <div>
+                    <label>Prefixo / Linha</label>
+                    <input type="text" name="prefixo" placeholder="Ex: 0802" value="{{ filtros.prefixo }}">
+                </div>
+
+                <div>
+                    <label>Forma de pagamento</label>
+                    <input type="text" name="pagamento" placeholder="Ex: PIX" value="{{ filtros.pagamento }}">
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn-principal">Filtrar</button>
+
+            <a href="{{ url_for('importar_bpe') }}" class="btn-secundario">
+                Limpar filtros
+            </a>
+
+            <a href="{{ url_for('exportar_bpe', data_inicio=filtros.data_inicio, data_fim=filtros.data_fim, origem=filtros.origem, destino=filtros.destino, prefixo=filtros.prefixo, pagamento=filtros.pagamento) }}" class="btn-excel">
+                Exportar Excel
+            </a>
         </form>
 
         <h2 class="page-title espaco-topo">Vendas importadas</h2>
@@ -76,8 +124,8 @@
                     {% for venda in vendas %}
                     <tr>
                         <td>{{ venda.numero_bpe }}</td>
-                        <td>{{ venda.data_emissao }}</td>
-                        <td>{{ venda.data_viagem }}</td>
+                        <td>{{ venda.data_emissao|data_br }}</td>
+                        <td>{{ venda.data_viagem|data_br }}</td>
                         <td>{{ venda.origem }}</td>
                         <td>{{ venda.destino }}</td>
                         <td>{{ venda.percurso }}</td>
@@ -85,12 +133,14 @@
                         <td>{{ venda.poltrona }}</td>
                         <td>R$ {{ "%.2f"|format(venda.valor_pago) }}</td>
                         <td>{{ venda.forma_pagamento }}</td>
-                        <td>{{ venda.status }}</td>
+                        <td>
+                            <span class="status">{{ venda.status }}</span>
+                        </td>
                     </tr>
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="11">Nenhum BP-e importado ainda.</td>
+                        <td colspan="11">Nenhum BP-e encontrado para os filtros informados.</td>
                     </tr>
                 {% endif %}
             </tbody>

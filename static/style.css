@@ -320,6 +320,7 @@ body {
 /* BOTÕES */
 
 .btn-principal {
+    display: inline-block;
     margin-top: 24px;
     background: #003366;
     color: white;
@@ -328,10 +329,42 @@ body {
     border-radius: 10px;
     font-size: 16px;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .btn-principal:hover {
     background: #005599;
+}
+
+.btn-secundario,
+.btn-excel {
+    display: inline-block;
+    margin-top: 24px;
+    margin-left: 10px;
+    text-decoration: none;
+    border: none;
+    padding: 13px 22px;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-secundario {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secundario:hover {
+    background: #5a6268;
+}
+
+.btn-excel {
+    background: #1f7a35;
+    color: white;
+}
+
+.btn-excel:hover {
+    background: #176128;
 }
 
 /* MENSAGENS */
@@ -370,6 +403,14 @@ body {
 
     .container {
         padding: 22px;
+    }
+
+    .btn-principal,
+    .btn-secundario,
+    .btn-excel {
+        width: 100%;
+        text-align: center;
+        margin-left: 0;
     }
 }
 

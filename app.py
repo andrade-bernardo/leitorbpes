@@ -1,6 +1,9 @@
 import os
+from io import BytesIO
+from datetime import datetime
 
-from flask import Flask, render_template, request, redirect, url_for, session
+import pandas as pd
+from flask import Flask, render_template, request, redirect, url_for, session, send_file
 
 from database import db
 from models import Viagem, VendaBPe
@@ -44,6 +47,51 @@ def buscar_linha_por_codigo(codigo):
         if linha["codigo"] == codigo:
             return linha
     return None
+
+
+def formatar_data_br(valor):
+    if not valor:
+        return "-"
+
+    try:
+        data = datetime.fromisoformat(valor)
+        return data.strftime("%d/%m/%Y %H:%M")
+    except Exception:
+        return valor
+
+
+@app.template_filter("data_br")
+def data_br(valor):
+    return formatar_data_br(valor)
+
+
+def aplicar_filtros_bpe(query):
+    data_inicio = request.args.get("data_inicio", "").strip()
+    data_fim = request.args.get("data_fim", "").strip()
+    origem = request.args.get("origem", "").strip()
+    destino = request.args.get("destino", "").strip()
+    prefixo = request.args.get("prefixo", "").strip()
+    pagamento = request.args.get("pagamento", "").strip()
+
+    if data_inicio:
+        query = query.filter(VendaBPe.data_viagem >= f"{data_inicio}T00:00:00")
+
+    if data_fim:
+        query = query.filter(VendaBPe.data_viagem <= f"{data_fim}T23:59:59")
+
+    if origem:
+        query = query.filter(VendaBPe.origem.ilike(f"%{origem}%"))
+
+    if destino:
+        query = query.filter(VendaBPe.destino.ilike(f"%{destino}%"))
+
+    if prefixo:
+        query = query.filter(VendaBPe.prefixo.ilike(f"%{prefixo}%"))
+
+    if pagamento:
+        query = query.filter(VendaBPe.forma_pagamento.ilike(f"%{pagamento}%"))
+
+    return query
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -219,10 +267,22 @@ def importar_bpe():
                 f"{duplicados} duplicado(s) e {erros} com erro."
             )
 
-    vendas = VendaBPe.query.order_by(VendaBPe.id.desc()).all()
+    query = VendaBPe.query
+    query = aplicar_filtros_bpe(query)
 
-    total_vendas = VendaBPe.query.count()
-    total_receita = db.session.query(db.func.sum(VendaBPe.valor_pago)).scalar() or 0
+    vendas = query.order_by(VendaBPe.id.desc()).all()
+
+    total_vendas = len(vendas)
+    total_receita = sum(venda.valor_pago or 0 for venda in vendas)
+
+    filtros = {
+        "data_inicio": request.args.get("data_inicio", ""),
+        "data_fim": request.args.get("data_fim", ""),
+        "origem": request.args.get("origem", ""),
+        "destino": request.args.get("destino", ""),
+        "prefixo": request.args.get("prefixo", ""),
+        "pagamento": request.args.get("pagamento", ""),
+    }
 
     return render_template(
         "importar_bpe.html",
@@ -231,6 +291,67 @@ def importar_bpe():
         erro=erro,
         total_vendas=total_vendas,
         total_receita=total_receita,
+        filtros=filtros,
+    )
+
+
+@app.route("/exportar-bpe")
+def exportar_bpe():
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    query = VendaBPe.query
+    query = aplicar_filtros_bpe(query)
+
+    vendas = query.order_by(VendaBPe.id.desc()).all()
+
+    dados = []
+
+    for venda in vendas:
+        dados.append({
+            "Chave BP-e": venda.chave_bpe,
+            "Número BP-e": venda.numero_bpe,
+            "Série": venda.serie,
+            "Data Emissão": formatar_data_br(venda.data_emissao),
+            "Data Viagem": formatar_data_br(venda.data_viagem),
+            "Origem": venda.origem,
+            "Destino": venda.destino,
+            "Percurso": venda.percurso,
+            "Prefixo": venda.prefixo,
+            "Poltrona": venda.poltrona,
+            "Plataforma": venda.plataforma,
+            "Valor Pago": venda.valor_pago,
+            "Forma Pagamento": venda.forma_pagamento,
+            "Agência": venda.agencia,
+            "Status": venda.status,
+        })
+
+    df = pd.DataFrame(dados)
+
+    output = BytesIO()
+
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        df.to_excel(writer, index=False, sheet_name="BP-es")
+
+        planilha = writer.sheets["BP-es"]
+
+        for coluna in planilha.columns:
+            tamanho_maximo = 0
+            letra_coluna = coluna[0].column_letter
+
+            for celula in coluna:
+                if celula.value:
+                    tamanho_maximo = max(tamanho_maximo, len(str(celula.value)))
+
+            planilha.column_dimensions[letra_coluna].width = min(tamanho_maximo + 2, 45)
+
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="relatorio_bpes.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
 
